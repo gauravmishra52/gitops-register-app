@@ -27,19 +27,18 @@ pipeline {
             }
         }
 
-        stage("Push the changed deployment file to Git") {
-            steps {
-                sh """
-                   git config --global user.name "gauravmishra52"
-                   git config --global user.email "gaurav.mishra.cs.2022@mitmeerut.ac.in"
-                   git add deployment.yaml
-                   git commit -m "Updated Deployment Manifest"
-                """
-                withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
-                  sh "git push https://github.com/gauravmishra52/gitops-register-app main"
-                }
-            }
+       stage("Push the changed deployment file to Git") {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'github-push-token', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASSWORD')]) {
+            sh '''
+                git config --global user.name "gauravmishra52"
+                git config --global user.email "gaurav.mishra.cs.2022@mitmeerut.ac.in"
+                git add deployment.yaml
+                git commit -m "Updated Deployment Manifest" || echo "No changes to commit"
+                git push https://$GIT_USER:$GIT_PASSWORD@github.com/gauravmishra52/gitops-register-app.git main
+            '''
         }
-      
     }
+}
+    }   
 }
